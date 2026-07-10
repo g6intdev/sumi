@@ -8,6 +8,8 @@ const sharedColors = {
 const colorSchemes = {
   light: {
     ...sharedColors,
+    accentSoft: '#E8E8FF',
+    avatar: '#D9D9F7',
     background: '#F7F7FA',
     surface: '#FFFFFF',
     textPrimary: '#18181B',
@@ -16,6 +18,8 @@ const colorSchemes = {
   },
   dark: {
     ...sharedColors,
+    accentSoft: '#25254A',
+    avatar: '#30305C',
     background: '#09090B',
     surface: '#18181B',
     textPrimary: '#FAFAFA',
@@ -25,12 +29,19 @@ const colorSchemes = {
 } as const;
 
 export const spacing = {
+  compact: 8,
+  control: 12,
+  section: 16,
   screenHorizontal: 24,
   contentGap: 18,
+  screenBottom: 32,
 } as const;
 
 export const radii = {
+  avatar: 28,
+  control: 12,
   surface: 16,
+  pill: 999,
 } as const;
 
 export const typography = {
@@ -42,6 +53,20 @@ export const typography = {
   body: {
     fontSize: 17,
   },
+  label: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  caption: {
+    fontSize: 13,
+  },
+} as const;
+
+export const sizes = {
+  avatar: 56,
+  border: 1,
+  selectedBorder: 2,
+  buttonHeight: 50,
 } as const;
 
 export function useTheme() {
@@ -52,5 +77,6 @@ export function useTheme() {
     radii,
     spacing,
     typography,
+    sizes,
   };
 }
