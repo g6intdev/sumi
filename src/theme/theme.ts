@@ -14,13 +14,15 @@ const sharedColors = {
   propCup: '#F4F4F5',
 } as const;
 
-export const comicBackgroundColors = [
-  '#F4D8CD',
-  '#D8E7F4',
-  '#DCEAD7',
-  '#E8DDF2',
-  '#F3E5C8',
+export const comicBackgroundOptions = [
+  { color: '#F4D8CD', label: 'Blush' },
+  { color: '#D8E7F4', label: 'Sky' },
+  { color: '#DCEAD7', label: 'Sage' },
+  { color: '#E8DDF2', label: 'Lavender' },
+  { color: '#F3E5C8', label: 'Sand' },
 ] as const;
+
+export const comicBackgroundColors = comicBackgroundOptions.map(({ color }) => color);
 
 export function getComicBackgroundColor(id: string) {
   const hash = Array.from(id).reduce((total, character) => total + character.charCodeAt(0), 0);
