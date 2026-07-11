@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button as HeaderButton, ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
+import { saveComic } from '@/storage/comic-library';
 import { useTheme } from '@/theme/theme';
 import type { SelectedCharacter } from '@/types/character';
 import type { CanvasObject, Panel } from '@/types/editor';
@@ -22,8 +23,10 @@ export function ComicCreatorScreen() {
   const {
     activePanel: initialActivePanel,
     characters: serializedCharacters,
+    comicId: initialComicId,
+    createdAt: initialCreatedAt,
     panels: serializedPanels,
-  } = useLocalSearchParams<{ activePanel?: string; characters?: string; panels?: string }>();
+  } = useLocalSearchParams<{ activePanel?: string; characters?: string; comicId?: string; createdAt?: string; panels?: string }>();
   const { colors, radii, sizes, spacing, typography } = useTheme();
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [editorHeight, setEditorHeight] = useState(windowHeight);
@@ -43,6 +46,8 @@ export function ComicCreatorScreen() {
   const [picker, setPicker] = useState<PickerKind>();
   const [dialogueDraft, setDialogueDraft] = useState('');
   const [nextObjectId, setNextObjectId] = useState(1);
+  const [comicId] = useState(() => initialComicId ?? `${Date.now()}`);
+  const [createdAt] = useState(() => initialCreatedAt ?? new Date().toISOString());
 
   const characters = useMemo(() => {
     try {
@@ -51,6 +56,10 @@ export function ComicCreatorScreen() {
       return [];
     }
   }, [serializedCharacters]);
+
+  useEffect(() => {
+    saveComic({ characters, createdAt, id: comicId, panels });
+  }, [characters, comicId, createdAt, panels]);
 
   useEffect(() => {
     const index = Number(initialActivePanel);
@@ -242,7 +251,12 @@ export function ComicCreatorScreen() {
             <HeaderButton
               onPress={() => router.push({
                 pathname: '/comic-preview',
-                params: { characters: serializedCharacters, panels: JSON.stringify(panels) },
+                params: {
+                  characters: serializedCharacters,
+                  comicId,
+                  createdAt,
+                  panels: JSON.stringify(panels),
+                },
               })}
               title="Next"
             />

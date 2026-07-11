@@ -18,7 +18,10 @@ function readComics(): SavedComic[] {
 let comics = readComics();
 
 export function saveComic(comic: SavedComic) {
-  comics = [comic, ...comics];
+  const existingIndex = comics.findIndex((item) => item.id === comic.id);
+  comics = existingIndex === -1
+    ? [comic, ...comics]
+    : comics.map((item, index) => index === existingIndex ? comic : item);
   try {
     globalThis.localStorage?.setItem(storageKey, JSON.stringify(comics));
   } catch {
