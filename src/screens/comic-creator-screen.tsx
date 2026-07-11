@@ -1,7 +1,7 @@
-import { BottomSheet, Button as NativeButton, Column, Host, Text as NativeText, TextInput as NativeTextInput } from '@expo/ui';
+import { BottomSheet, Button, Column, Host, Text as NativeText, TextInput as NativeTextInput } from '@expo/ui';
 import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, View, useWindowDimensions } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
 import { useTheme } from '@/theme/theme';
@@ -19,7 +19,8 @@ const choices = {
 export function ComicCreatorScreen() {
   const { characters: serializedCharacters } = useLocalSearchParams<{ characters?: string }>();
   const { colors, radii, sizes, spacing, typography } = useTheme();
-  const { width: windowWidth } = useWindowDimensions();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const [editorHeight, setEditorHeight] = useState(windowHeight);
   const [panel, setPanel] = useState<Panel>({ objects: [] });
   const [selectedObjectId, setSelectedObjectId] = useState<string>();
   const [picker, setPicker] = useState<PickerKind>();
@@ -34,8 +35,12 @@ export function ComicCreatorScreen() {
     }
   }, [serializedCharacters]);
   const selectedObject = panel.objects.find((object) => object.id === selectedObjectId);
-  const canvasWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 2);
-  const canvasHeight = canvasWidth * 0.72;
+  const availableCanvasWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 2);
+  const availableCanvasHeight = Math.max(0, editorHeight - sizes.panelEditorChromeHeight);
+  const canvasWidth = process.env.EXPO_OS === 'web'
+    ? Math.min(availableCanvasWidth, availableCanvasHeight * sizes.panelAspectRatio)
+    : availableCanvasWidth;
+  const canvasHeight = canvasWidth / sizes.panelAspectRatio;
 
   function updateObject(id: string, update: Partial<CanvasObject>) {
     setPanel((current) => ({ ...current, objects: current.objects.map((object) => object.id === id ? { ...object, ...update } : object) }));
@@ -45,7 +50,17 @@ export function ComicCreatorScreen() {
     const objectSize = type === 'character' ? sizes.canvasObject : sizes.assetObject;
     const id = `${type}-${nextObjectId}`;
     setNextObjectId((current) => current + 1);
-    const object: CanvasObject = { id, type, assetId, width: objectSize, height: objectSize, x: (canvasWidth - objectSize) / 2, y: (canvasHeight - objectSize) / 2 };
+    const width = canvasWidth > 0 ? objectSize / canvasWidth : 0;
+    const height = canvasHeight > 0 ? objectSize / canvasHeight : 0;
+    const object: CanvasObject = {
+      id,
+      type,
+      assetId,
+      width,
+      height,
+      x: (1 - width) / 2,
+      y: (1 - height) / 2,
+    };
     setPanel((current) => ({ ...current, objects: [...current.objects, object] }));
     setSelectedObjectId(id);
     setPicker(undefined);
@@ -57,18 +72,9 @@ export function ComicCreatorScreen() {
   }
 
   const action = (label: string, onPress: () => void, danger = false) => (
-    <Pressable
-      accessibilityRole="button"
-      key={label}
-      onPress={onPress}
-      style={({ pressed }) => ({
-        alignItems: 'center', backgroundColor: danger ? colors.danger : colors.surface,
-        borderColor: danger ? colors.danger : colors.border, borderRadius: radii.control,
-        borderWidth: sizes.border, minWidth: sizes.actionMinWidth, opacity: pressed ? 0.7 : 1,
-        paddingHorizontal: spacing.control, paddingVertical: spacing.control,
-      })}>
-      <Text style={{ color: danger ? colors.dialogue : colors.textPrimary, ...typography.label }}>{label}</Text>
-    </Pressable>
+    <Host key={label} matchContents seedColor={danger ? colors.danger : colors.accent}>
+      <Button label={label} onPress={onPress} variant="outlined" />
+    </Host>
   );
 
   const pickerTitle = picker === 'background' ? 'Choose a background' : picker === 'character' ? 'Add a character' : picker === 'asset' ? 'Add an asset' : picker === 'expression' ? 'Choose an expression' : 'Add dialogue';
@@ -85,9 +91,12 @@ export function ComicCreatorScreen() {
     <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
+      onLayout={(event) => setEditorHeight(event.nativeEvent.layout.height)}
       style={{ flex: 1, backgroundColor: colors.background }}
       contentContainerStyle={{ alignItems: 'center', gap: spacing.contentGap, paddingHorizontal: spacing.screenHorizontal, paddingBottom: spacing.screenBottom }}>
-      <Text selectable style={{ alignSelf: 'flex-start', color: colors.textPrimary, ...typography.title }}>Panel 1 of 4</Text>
+      <Host matchContents>
+        <NativeText textStyle={{ color: colors.textPrimary, ...typography.title }}>Panel 1 of 4</NativeText>
+      </Host>
       <ComicPanelCanvas height={canvasHeight} onMoveObject={(id, x, y) => updateObject(id, { x, y })} onSelectObject={setSelectedObjectId} panel={panel} selectedObjectId={selectedObjectId} width={canvasWidth} />
 
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.control, justifyContent: 'center' }}>
@@ -111,7 +120,7 @@ export function ComicCreatorScreen() {
               {pickerTitle}
             </NativeText>
             {picker === 'character' ? characters.map((character) => (
-              <NativeButton key={character.id} label={character.id} onPress={() => chooseNativeItem('character', character.id)} variant="outlined" />
+              <Button key={character.id} label={character.id} onPress={() => chooseNativeItem('character', character.id)} variant="outlined" />
             )) : null}
             {picker === 'character' && characters.length === 0 ? (
               <NativeText textStyle={{ color: colors.textSecondary, ...typography.body }}>
@@ -119,13 +128,13 @@ export function ComicCreatorScreen() {
               </NativeText>
             ) : null}
             {picker === 'background' ? choices.background.map((choice) => (
-              <NativeButton key={choice.id} label={choice.label} onPress={() => chooseNativeItem('background', choice.id)} variant="outlined" />
+              <Button key={choice.id} label={choice.label} onPress={() => chooseNativeItem('background', choice.id)} variant="outlined" />
             )) : null}
             {picker === 'asset' ? choices.asset.map((choice) => (
-              <NativeButton key={choice.id} label={choice.label} onPress={() => chooseNativeItem('asset', choice.id)} variant="outlined" />
+              <Button key={choice.id} label={choice.label} onPress={() => chooseNativeItem('asset', choice.id)} variant="outlined" />
             )) : null}
             {picker === 'expression' ? choices.expression.map((choice) => (
-              <NativeButton
+              <Button
                 key={choice.id}
                 label={choice.label}
                 onPress={() => {
@@ -155,7 +164,7 @@ export function ComicCreatorScreen() {
                   }}
                   textStyle={{ color: colors.textPrimary, ...typography.body }}
                 />
-                <NativeButton
+                <Button
                   label="Save dialogue"
                   onPress={() => {
                     if (selectedObjectId) updateObject(selectedObjectId, { dialogue: dialogueDraft.trim() || undefined });
@@ -164,7 +173,7 @@ export function ComicCreatorScreen() {
                 />
               </>
             ) : null}
-            <NativeButton label="Cancel" onPress={() => setPicker(undefined)} variant="text" />
+            <Button label="Cancel" onPress={() => setPicker(undefined)} variant="text" />
           </Column>
         </BottomSheet>
       </Host>

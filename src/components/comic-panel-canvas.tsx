@@ -92,6 +92,8 @@ function CanvasItem({ object, selected }: { object: CanvasObject; selected: bool
 export function ComicPanelCanvas({ height, onMoveObject, onSelectObject, panel, selectedObjectId, width }: ComicPanelCanvasProps) {
   const { colors, sizes } = useTheme();
   const background = panel.backgroundId === 'sky' ? colors.canvasSky : panel.backgroundId === 'sunset' ? colors.canvasSunset : colors.canvasPaper;
+  const contentWidth = Math.max(0, width - sizes.canvasBorder * 2);
+  const contentHeight = Math.max(0, height - sizes.canvasBorder * 2);
   return (
     <View
       accessibilityLabel="Comic panel canvas"
@@ -107,21 +109,35 @@ export function ComicPanelCanvas({ height, onMoveObject, onSelectObject, panel, 
         position: 'relative',
         width,
       }}>
-      {panel.objects.map((object) => (
-        <DraggableCanvasObject
-          canvasHeight={height - sizes.canvasBorder * 2}
-          canvasWidth={width - sizes.canvasBorder * 2}
-          height={object.height}
+      {panel.objects.map((object) => {
+        const pixelObject = {
+          ...object,
+          x: object.x * contentWidth,
+          y: object.y * contentHeight,
+          width: object.width * contentWidth,
+          height: object.height * contentHeight,
+        };
+
+        return (
+          <DraggableCanvasObject
+          canvasHeight={contentHeight}
+          canvasWidth={contentWidth}
+          height={pixelObject.height}
           isSelected={selectedObjectId === object.id}
           key={object.id}
-          onMove={(x, y) => onMoveObject(object.id, x, y)}
+          onMove={(x, y) => onMoveObject(
+            object.id,
+            contentWidth > 0 ? x / contentWidth : 0,
+            contentHeight > 0 ? y / contentHeight : 0,
+          )}
           onSelect={() => onSelectObject(object.id)}
-          width={object.width}
-          x={object.x}
-          y={object.y}>
-          <CanvasItem object={object} selected={selectedObjectId === object.id} />
+          width={pixelObject.width}
+          x={pixelObject.x}
+          y={pixelObject.y}>
+          <CanvasItem object={pixelObject} selected={selectedObjectId === object.id} />
         </DraggableCanvasObject>
-      ))}
+        );
+      })}
     </View>
   );
 }

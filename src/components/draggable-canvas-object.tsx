@@ -15,8 +15,10 @@ type DraggableCanvasObjectProps = PropsWithChildren<{
   y: number;
 }>;
 
-const clamp = (value: number, minimum: number, maximum: number) =>
-  Math.min(Math.max(value, minimum), maximum);
+const clamp = (value: number, minimum: number, maximum: number) => {
+  'worklet';
+  return Math.min(Math.max(value, minimum), maximum);
+};
 
 export function DraggableCanvasObject({
   canvasHeight,
