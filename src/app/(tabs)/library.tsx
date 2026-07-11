@@ -1,3 +1,4 @@
+import { BottomSheet, Button, Column, Host, Row, Spacer, Text as NativeText, TextInput as NativeTextInput } from '@expo/ui';
 import { MenuView } from '@expo/ui/community/menu';
 import * as Sharing from 'expo-sharing';
 import { useRouter } from 'expo-router';
@@ -7,7 +8,7 @@ import { captureRef } from 'react-native-view-shot';
 
 import { ComicExportCanvas } from '@/components/comic-export-canvas';
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
-import { deleteComic, useComicLibrary } from '@/storage/comic-library';
+import { deleteComic, saveComic, useComicLibrary } from '@/storage/comic-library';
 import { useTheme } from '@/theme/theme';
 import type { SavedComic } from '@/types/comic';
 
@@ -21,7 +22,11 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
   const router = useRouter();
   const exportRef = useRef<View>(null);
   const [webMenuOpen, setWebMenuOpen] = useState(false);
+  const [nameDraft, setNameDraft] = useState(comic.name);
+  const [renameOpen, setRenameOpen] = useState(false);
   const { colors, radii, sizes, spacing, typography } = useTheme();
+  const { width: windowWidth } = useWindowDimensions();
+  const renameFieldWidth = Math.min(sizes.modalMaxWidth, windowWidth - spacing.screenHorizontal * 2);
 
   const openComic = () => router.push({
     pathname: '/comic-preview',
@@ -44,6 +49,19 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: remove },
     ]);
+  };
+
+  const editName = () => {
+    setWebMenuOpen(false);
+    setNameDraft(comic.name);
+    setRenameOpen(true);
+  };
+
+  const commitName = () => {
+    const name = nameDraft.trim();
+    if (!name) return;
+    saveComic({ ...comic, name });
+    setRenameOpen(false);
   };
 
   const exportComic = async () => {
@@ -70,11 +88,9 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
   const card = (
     <Pressable
       accessibilityHint="Opens the comic preview, where you can edit its panels"
-      accessibilityLabel={`Open comic from ${new Date(comic.createdAt).toLocaleString()}`}
+      accessibilityLabel={`Open ${comic.name} from ${new Date(comic.createdAt).toLocaleString()}`}
       accessibilityRole="button"
       onPress={openComic}
-      // React Native Web forwards this handler to the underlying DOM node.
-      {...(Platform.OS === 'web' ? { onContextMenu: (event: { preventDefault(): void }) => { event.preventDefault(); setWebMenuOpen(true); } } : {})}
       style={({ pressed }) => ({
         alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border,
         borderCurve: 'continuous', borderRadius: radii.surface, borderWidth: sizes.border,
@@ -89,28 +105,80 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
             onSelectObject={() => {}} panel={comic.panels[index] ?? { objects: [] }} width={panelWidth} />
         ))}
       </View>
+      <Text style={{ color: colors.textPrimary, ...typography.label }}>{comic.name}</Text>
       <Text style={{ color: colors.textSecondary, ...typography.caption }}>{new Date(comic.createdAt).toLocaleString()}</Text>
-      {webMenuOpen ? (
-        <View style={{ backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.control,
-          borderWidth: sizes.border, boxShadow: '0 6px 20px rgba(0,0,0,0.18)', minWidth: sizes.contextMenuWidth,
-          padding: spacing.tiny, position: 'absolute', right: spacing.compact, top: spacing.compact, zIndex: 1 }}>
-          <Pressable onPress={exportComic} style={{ padding: spacing.control }}><Text style={{ color: colors.textPrimary, ...typography.label }}>Export</Text></Pressable>
-          <Pressable onPress={() => { setWebMenuOpen(false); confirmDelete(); }} style={{ padding: spacing.control }}><Text style={{ color: colors.danger, ...typography.label }}>Delete</Text></Pressable>
-        </View>
-      ) : null}
     </Pressable>
   );
 
   return (
-    <View>
-      {Platform.OS === 'web' ? card : (
+    <View style={{ position: 'relative' }}>
+      {Platform.OS === 'web' ? (
+        <>
+          {card}
+          <Pressable
+            accessibilityLabel="Comic actions"
+            accessibilityRole="button"
+            onPress={() => setWebMenuOpen((open) => !open)}
+            style={({ pressed }) => ({
+              alignItems: 'center', backgroundColor: colors.surface, borderColor: colors.border,
+              borderRadius: radii.pill, borderWidth: sizes.border, height: sizes.contextMenuButton,
+              justifyContent: 'center', opacity: pressed ? 0.7 : 1, position: 'absolute',
+              right: spacing.compact, top: spacing.compact, width: sizes.contextMenuButton,
+            })}>
+            <Text style={{ color: colors.textPrimary, ...typography.label }}>•••</Text>
+          </Pressable>
+          {webMenuOpen ? (
+            <View style={{ backgroundColor: colors.surface, borderColor: colors.border, borderRadius: radii.control,
+              borderWidth: sizes.border, boxShadow: '0 6px 20px rgba(0,0,0,0.18)', minWidth: sizes.contextMenuWidth,
+              padding: spacing.tiny, position: 'absolute', right: spacing.compact,
+              top: sizes.contextMenuButton + spacing.control, zIndex: 1 }}>
+              <Pressable onPress={editName} style={{ padding: spacing.control }}><Text style={{ color: colors.textPrimary, ...typography.label }}>Edit name</Text></Pressable>
+              <Pressable onPress={exportComic} style={{ padding: spacing.control }}><Text style={{ color: colors.textPrimary, ...typography.label }}>Export</Text></Pressable>
+              <Pressable onPress={() => { setWebMenuOpen(false); confirmDelete(); }} style={{ padding: spacing.control }}><Text style={{ color: colors.danger, ...typography.label }}>Delete</Text></Pressable>
+            </View>
+          ) : null}
+        </>
+      ) : (
         <MenuView shouldOpenOnLongPress actions={[
+          { id: 'edit-name', title: 'Edit name', image: 'pencil' },
           { id: 'export', title: 'Export', image: 'square.and.arrow.up' },
           { id: 'delete', title: 'Delete', image: 'trash', attributes: { destructive: true } },
-        ]} onPressAction={({ nativeEvent }) => nativeEvent.event === 'export' ? exportComic() : confirmDelete()}>
+        ]} onPressAction={({ nativeEvent }) => {
+          if (nativeEvent.event === 'edit-name') editName();
+          else if (nativeEvent.event === 'export') exportComic();
+          else confirmDelete();
+        }}>
           {card}
         </MenuView>
       )}
+      <Host matchContents seedColor={colors.accent}>
+        <BottomSheet isPresented={renameOpen} onDismiss={() => setRenameOpen(false)} showDragIndicator>
+          <Column alignment="start" spacing={spacing.section} style={{ padding: spacing.screenHorizontal }}>
+            <Row spacing={spacing.control}>
+              <Button label="×" onPress={() => setRenameOpen(false)} variant="outlined" />
+              <Spacer />
+              <NativeText textStyle={{ color: colors.textPrimary, ...typography.label }}>Edit name</NativeText>
+              <Spacer />
+              <Button label="Save" onPress={commitName} variant="filled" />
+            </Row>
+            <NativeTextInput
+              autoCapitalize="words"
+              autoFocus
+              defaultValue={nameDraft}
+              key={`${comic.id}-${renameOpen}`}
+              onChangeText={setNameDraft}
+              onSubmitEditing={commitName}
+              placeholder="Comic name"
+              placeholderTextColor={colors.textSecondary}
+              returnKeyType="done"
+              selectTextOnFocus
+              style={{ backgroundColor: colors.background, borderColor: colors.border, borderRadius: radii.control,
+                borderWidth: sizes.border, padding: spacing.control, width: renameFieldWidth }}
+              textStyle={{ color: colors.textPrimary, ...typography.body }}
+            />
+          </Column>
+        </BottomSheet>
+      </Host>
       <View pointerEvents="none" style={{ left: -10000, position: 'absolute', top: 0 }}>
         <ComicExportCanvas comic={comic} ref={exportRef} />
       </View>

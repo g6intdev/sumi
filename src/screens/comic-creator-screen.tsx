@@ -7,12 +7,12 @@ import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
 import { getComic, saveComic } from '@/storage/comic-library';
 import { getComicBackgroundColor, useTheme } from '@/theme/theme';
 import type { SelectedCharacter } from '@/types/character';
-import type { CanvasObject, Panel } from '@/types/editor';
+import { normalizePanels, type CanvasObject, type Panel } from '@/types/editor';
 
-type PickerKind = 'background' | 'character' | 'asset' | 'expression' | 'dialogue';
+type PickerKind = 'scene' | 'character' | 'asset' | 'expression' | 'dialogue';
 
 const choices = {
-  background: [{ id: 'paper', label: 'Paper' }, { id: 'sky', label: 'Blue sky' }, { id: 'sunset', label: 'Sunset' }],
+  scene: [{ id: 'paper', label: 'Paper' }, { id: 'sky', label: 'Blue sky' }, { id: 'sunset', label: 'Sunset' }],
   asset: [{ id: 'table', label: 'Table' }, { id: 'phone', label: 'Phone' }, { id: 'cup', label: 'Cup' }],
   expression: [{ id: 'happy', label: 'Happy 😄' }, { id: 'surprised', label: 'Surprised 😮' }, { id: 'annoyed', label: 'Annoyed 😒' }],
 } as const;
@@ -34,8 +34,8 @@ export function ComicCreatorScreen() {
   const [panels, setPanels] = useState<Panel[]>(() => {
     try {
       const parsed = serializedPanels
-        ? JSON.parse(serializedPanels) as Panel[]
-        : savedComic?.panels ?? [];
+        ? normalizePanels(JSON.parse(serializedPanels))
+        : normalizePanels(savedComic?.panels);
       return Array.from({ length: panelCount }, (_, index) => parsed[index] ?? { objects: [] });
     } catch {
       return Array.from({ length: panelCount }, () => ({ objects: [] }));
@@ -51,6 +51,7 @@ export function ComicCreatorScreen() {
   const [nextObjectId, setNextObjectId] = useState(1);
   const [comicId] = useState(() => initialComicId ?? `${Date.now()}`);
   const [createdAt] = useState(() => initialCreatedAt ?? savedComic?.createdAt ?? new Date().toISOString());
+  const [name] = useState(() => savedComic?.name ?? 'Untitled Comic');
   const backgroundColor = savedComic?.backgroundColor ?? getComicBackgroundColor(comicId);
 
   const characters = useMemo(() => {
@@ -67,9 +68,10 @@ export function ComicCreatorScreen() {
       characters,
       createdAt,
       id: comicId,
+      name,
       panels,
     });
-  }, [backgroundColor, characters, comicId, createdAt, panels]);
+  }, [backgroundColor, characters, comicId, createdAt, name, panels]);
 
   useEffect(() => {
     const index = Number(initialActivePanel);
@@ -143,10 +145,10 @@ export function ComicCreatorScreen() {
     </Button>
   );
 
-  const pickerTitle = picker === 'background' ? 'Choose a background' : picker === 'character' ? 'Add a character' : picker === 'asset' ? 'Add an asset' : picker === 'expression' ? 'Choose an expression' : 'Add dialogue';
-  function chooseNativeItem(kind: 'background' | 'character' | 'asset', id: string) {
-    if (kind === 'background') {
-      updatePanel((current) => ({ ...current, backgroundId: id }));
+  const pickerTitle = picker === 'scene' ? 'Choose a scene' : picker === 'character' ? 'Add a character' : picker === 'asset' ? 'Add an asset' : picker === 'expression' ? 'Choose an expression' : 'Add dialogue';
+  function chooseNativeItem(kind: 'scene' | 'character' | 'asset', id: string) {
+    if (kind === 'scene') {
+      updatePanel((current) => ({ ...current, sceneId: id }));
       setPicker(undefined);
     } else {
       addObject(kind, id);
@@ -170,7 +172,7 @@ export function ComicCreatorScreen() {
         {selectedObject?.type === 'character' ? (
           <>{action('Dialogue', () => { setDialogueDraft(selectedObject.dialogue ?? ''); setPicker('dialogue'); })}{action('Expression', () => setPicker('expression'))}{action('Delete', deleteSelected, true)}</>
         ) : (
-          <>{action('Background', () => setPicker('background'))}{action('Character', () => setPicker('character'))}{action('Asset', () => setPicker('asset'))}</>
+          <>{action('Scene', () => setPicker('scene'))}{action('Character', () => setPicker('character'))}{action('Asset', () => setPicker('asset'))}</>
         )}
       </View>
       <View style={{ flexDirection: 'row', gap: spacing.compact, justifyContent: 'center', width: '100%' }}>
@@ -212,8 +214,8 @@ export function ComicCreatorScreen() {
                 No cast members were selected.
               </NativeText>
             ) : null}
-            {picker === 'background' ? choices.background.map((choice) => (
-              bottomSheetButton(choice.label, () => chooseNativeItem('background', choice.id))
+            {picker === 'scene' ? choices.scene.map((choice) => (
+              bottomSheetButton(choice.label, () => chooseNativeItem('scene', choice.id))
             )) : null}
             {picker === 'asset' ? choices.asset.map((choice) => (
               bottomSheetButton(choice.label, () => chooseNativeItem('asset', choice.id))

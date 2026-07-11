@@ -1,56 +1,191 @@
-# Welcome to your Expo app 👋
+# 4-Panel Manga
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile-first communication app for creating expressive 4-panel (4-koma) manga in under a minute.
 
-## Get started
+The goal is to make visual storytelling as effortless as sending a message, while ensuring users feel that **they created the comic**, rather than having AI generate it for them.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+# Vision
 
-2. Start the app
+People already communicate using:
 
-   ```bash
-   npx expo start
-   ```
+- Text
+- Emojis
+- GIFs
+- Stickers
+- Memes
 
-In the output, you'll find options to open the app in a
+This project explores whether **4-panel manga** can become another lightweight communication format.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Instead of typing a prompt and letting AI generate an entire comic, users create comics by arranging characters, expressions, props, backgrounds, and dialogue. The app accelerates creativity rather than replacing it.
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+---
 
-## Get a fresh project
+# Design Principles
 
-When you're ready, run:
+- 🎭 User-directed, not AI-directed.
+- ⚡ Create a comic in under 60 seconds.
+- 📱 Native-first interaction.
+- 🧩 Compose stories by arranging visual elements.
+- 😊 Users should feel "I made this joke."
 
-```bash
-npm run reset-project
+---
+
+# Current User Flow
+
+```
+Home
+    ↓
+Choose Characters
+    ↓
+Panel 1
+    ↓
+Panel 2
+    ↓
+Panel 3
+    ↓
+Panel 4
+    ↓
+Preview
+    ↓
+Share
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Each panel is edited individually while the app maintains the context of a complete 4-panel comic.
 
-### Other setup steps
+---
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+# Editor Philosophy
 
-## Learn more
+The editor should feel like directing actors on a small stage.
 
-To learn more about developing your project with Expo, look at the following resources:
+Users should:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- Place characters
+- Move them around
+- Change expressions
+- Add dialogue
+- Add props
+- Choose backgrounds
 
-## Join the community
+The editor should **never** feel like:
 
-Join our community of developers creating universal apps.
+- Filling out a form
+- Prompting an AI
+- Editing a database
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+---
+
+# MVP Scope
+
+Current priorities:
+
+- Character selection
+- One-panel editor
+- Drag-and-drop interaction
+- Speech bubbles
+- Expressions
+- Backgrounds
+- Props
+- Comic preview
+- Image export
+- Native sharing
+
+---
+
+# Not Planned for V1
+
+The following are intentionally out of scope:
+
+- AI story generation
+- Public social feed
+- Authentication
+- Cloud storage
+- User profiles
+- Monetization
+- Marketplace
+- Custom avatar builder
+- Collaborative editing
+
+The focus is validating the core creation experience before expanding the product.
+
+---
+
+# Technology
+
+- Expo
+- Expo Router
+- TypeScript
+- Expo UI
+- React Native
+- React Native Gesture Handler
+- React Native Reanimated
+
+---
+
+# Development
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npx expo start
+```
+
+Run on:
+
+- iOS Simulator
+- Android Emulator
+- Expo Go (where supported)
+- Web
+
+---
+
+# Project Structure
+
+```
+app/            # Expo Router routes
+components/     # Reusable UI components
+theme/          # Semantic design tokens
+assets/         # Images and static assets
+```
+
+---
+
+# Future Ideas
+
+Ideas that may be explored after validating the core editor:
+
+- AI-assisted expression suggestions
+- AI-assisted dialogue suggestions
+- Asset packs
+- Photo props
+- Native social feed
+- Community templates
+- Creator monetization
+
+---
+
+# Success Metric
+
+The primary success metric is not downloads.
+
+It is whether someone can think:
+
+> "Something funny just happened."
+
+Open the app.
+
+Create a relatable 4-panel manga in under one minute.
+
+Share it with friends.
+
+And feel:
+
+> "I made this."

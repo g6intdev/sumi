@@ -92,7 +92,7 @@ function CanvasItem({ object, selected }: { object: CanvasObject; selected: bool
 
 export function ComicPanelCanvas({ height, interactive = true, onMoveObject, onSelectObject, panel, selectedObjectId, width }: ComicPanelCanvasProps) {
   const { colors, sizes } = useTheme();
-  const background = panel.backgroundId === 'sky' ? colors.canvasSky : panel.backgroundId === 'sunset' ? colors.canvasSunset : colors.canvasPaper;
+  const background = panel.sceneId === 'sky' ? colors.canvasSky : panel.sceneId === 'sunset' ? colors.canvasSunset : colors.canvasPaper;
   const contentWidth = Math.max(0, width - sizes.canvasBorder * 2);
   const contentHeight = Math.max(0, height - sizes.canvasBorder * 2);
   return (

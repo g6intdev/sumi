@@ -3,6 +3,7 @@ import 'expo-sqlite/localStorage/install';
 import { useSyncExternalStore } from 'react';
 
 import type { SavedComic } from '@/types/comic';
+import { normalizePanels } from '@/types/editor';
 import { getComicBackgroundColor } from '@/theme/theme';
 
 const storageKey = 'sumi.comic-library.v1';
@@ -13,7 +14,12 @@ function readComics(): SavedComic[] {
     const saved = JSON.parse(globalThis.localStorage?.getItem(storageKey) ?? '[]') as Partial<SavedComic>[];
     return saved
       .filter((comic): comic is Partial<SavedComic> & Pick<SavedComic, 'id'> => typeof comic.id === 'string')
-      .map((comic) => ({ ...comic, backgroundColor: comic.backgroundColor ?? getComicBackgroundColor(comic.id) }) as SavedComic);
+      .map((comic) => ({
+        ...comic,
+        backgroundColor: comic.backgroundColor ?? getComicBackgroundColor(comic.id),
+        name: comic.name ?? 'Untitled Comic',
+        panels: normalizePanels(comic.panels),
+      }) as SavedComic);
   } catch {
     return [];
   }

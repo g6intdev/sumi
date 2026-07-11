@@ -108,6 +108,7 @@ export const sizes = {
   libraryComicMinWidth: 150,
   comicExportWidth: 1200,
   contextMenuWidth: 144,
+  contextMenuButton: 36,
 } as const;
 
 export function useTheme() {

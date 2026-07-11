@@ -6,7 +6,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
 import { EditComicButton } from '@/components/edit-comic-button';
 import { useTheme } from '@/theme/theme';
-import type { Panel } from '@/types/editor';
+import { normalizePanels, type Panel } from '@/types/editor';
 
 const panelCount = 4;
 
@@ -23,7 +23,7 @@ export function ComicPreviewScreen() {
   const { width: windowWidth } = useWindowDimensions();
   const panels = useMemo<Panel[]>(() => {
     try {
-      const parsed = serializedPanels ? JSON.parse(serializedPanels) as Panel[] : [];
+      const parsed = serializedPanels ? normalizePanels(JSON.parse(serializedPanels)) : [];
       return Array.from({ length: panelCount }, (_, index) => parsed[index] ?? { objects: [] });
     } catch {
       return Array.from({ length: panelCount }, () => ({ objects: [] }));

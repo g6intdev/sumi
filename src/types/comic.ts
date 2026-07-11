@@ -6,5 +6,6 @@ export type SavedComic = {
   characters: SelectedCharacter[];
   createdAt: string;
   id: string;
+  name: string;
   panels: Panel[];
 };

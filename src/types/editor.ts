@@ -17,6 +17,23 @@ export type CanvasObject = {
 };
 
 export type Panel = {
-  backgroundId?: string;
+  sceneId?: string;
   objects: CanvasObject[];
 };
+
+type LegacyPanel = Omit<Panel, 'sceneId'> & {
+  backgroundId?: string;
+  sceneId?: string;
+};
+
+export function normalizePanels(value: unknown): Panel[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.map((panel) => {
+    const { backgroundId, ...rest } = panel as LegacyPanel;
+    return {
+      ...rest,
+      sceneId: rest.sceneId ?? backgroundId,
+    };
+  });
+}
