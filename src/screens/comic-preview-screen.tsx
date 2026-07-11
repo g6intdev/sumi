@@ -1,9 +1,11 @@
-import { router, useLocalSearchParams } from 'expo-router';
-import { useMemo } from 'react';
-import { Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useMemo, useState } from 'react';
+import { Button as HeaderButton, Pressable, ScrollView, useWindowDimensions } from 'react-native';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
+import { saveComic } from '@/storage/comic-library';
 import { useTheme } from '@/theme/theme';
+import type { SelectedCharacter } from '@/types/character';
 import type { Panel } from '@/types/editor';
 
 const panelCount = 4;
@@ -15,6 +17,7 @@ export function ComicPreviewScreen() {
   }>();
   const { colors, sizes, spacing } = useTheme();
   const { width: windowWidth } = useWindowDimensions();
+  const [isSaving, setIsSaving] = useState(false);
   const panels = useMemo<Panel[]>(() => {
     try {
       const parsed = serializedPanels ? JSON.parse(serializedPanels) as Panel[] : [];
@@ -26,8 +29,23 @@ export function ComicPreviewScreen() {
   const panelWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 2);
   const panelHeight = panelWidth / sizes.panelAspectRatio;
 
+  function handleSave() {
+    if (isSaving) return;
+    setIsSaving(true);
+    let characters: SelectedCharacter[] = [];
+    try {
+      characters = serializedCharacters ? JSON.parse(serializedCharacters) as SelectedCharacter[] : [];
+    } catch {
+      characters = [];
+    }
+    const createdAt = new Date().toISOString();
+    saveComic({ characters, createdAt, id: `${Date.now()}`, panels });
+    router.replace('/(tabs)/library');
+  }
+
   return (
-    <ScrollView
+    <>
+      <ScrollView
       alwaysBounceVertical
       contentInsetAdjustmentBehavior="automatic"
       nestedScrollEnabled
@@ -64,6 +82,12 @@ export function ComicPreviewScreen() {
           />
         </Pressable>
       ))}
-    </ScrollView>
+      </ScrollView>
+      <Stack.Screen
+        options={{
+          headerRight: () => <HeaderButton disabled={isSaving} onPress={handleSave} title="Save" />,
+        }}
+      />
+    </>
   );
 }
