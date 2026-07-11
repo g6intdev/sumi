@@ -1,9 +1,10 @@
 import { BottomSheet, Button, Column, Host, Row, Spacer, Text as NativeText, TextInput as NativeTextInput } from '@expo/ui';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { Button as HeaderButton, ScrollView, View, useWindowDimensions } from 'react-native';
+import { ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
+import { HeaderActionButton } from '@/components/header-action-button';
 import { getComic, saveComic } from '@/storage/comic-library';
 import { getComicBackgroundColor, useTheme } from '@/theme/theme';
 import type { SelectedCharacter } from '@/types/character';
@@ -260,7 +261,7 @@ export function ComicCreatorScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <HeaderButton
+            <HeaderActionButton
               onPress={() => router.push({
                 pathname: '/comic-preview',
                 params: {

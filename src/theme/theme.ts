@@ -2,6 +2,7 @@ import { useColorScheme } from 'react-native';
 
 const sharedColors = {
   accent: '#5B5BD6',
+  textOnAccent: '#FFFFFF',
   danger: '#DC2626',
   canvasInk: '#24212B',
   canvasPaper: '#FFF9ED',

@@ -1,11 +1,12 @@
 import { Host, Picker, Row, Text as NativeText } from '@expo/ui';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Button as HeaderButton, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
+import { Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
 import { EditComicButton } from '@/components/edit-comic-button';
+import { HeaderActionButton } from '@/components/header-action-button';
 import { getComic, saveComic } from '@/storage/comic-library';
 import { comicBackgroundOptions, getComicBackgroundColor, useTheme } from '@/theme/theme';
 import type { SelectedCharacter } from '@/types/character';
@@ -134,7 +135,7 @@ export function ComicPreviewScreen() {
       </View>
       <Stack.Screen
         options={{
-          headerRight: () => <HeaderButton onPress={() => router.replace('/(tabs)/library')} title="Done" />,
+          headerRight: () => <HeaderActionButton onPress={() => router.replace('/(tabs)/library')} title="Done" />,
         }}
       />
     </>
