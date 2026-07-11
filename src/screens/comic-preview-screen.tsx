@@ -1,4 +1,4 @@
-import { Host, Picker, Row, Spacer, Text as NativeText } from '@expo/ui';
+import { Host, Picker, Row, Text as NativeText } from '@expo/ui';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Button as HeaderButton, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
@@ -94,10 +94,9 @@ export function ComicPreviewScreen() {
         paddingHorizontal: spacing.screenHorizontal,
         paddingBottom: spacing.screenBottom,
       }}>
-      <Host matchContents seedColor={colors.accent} style={{ alignSelf: 'stretch' }}>
-        <Row alignment="center" spacing={spacing.control}>
+      <Host matchContents seedColor={colors.accent}>
+        <Row alignment="center" spacing={spacing.compact}>
           <NativeText>Background:</NativeText>
-          <Spacer flexible />
           <Picker selectedValue={currentBackgroundColor} onValueChange={changeBackgroundColor}>
             {comicBackgroundOptions.map(({ color, label }) => (
               <Picker.Item key={color} label={label} value={color} />
@@ -127,9 +126,9 @@ export function ComicPreviewScreen() {
       <View
         style={{
           bottom: insets.bottom + spacing.screenBottom,
-          left: spacing.screenHorizontal,
           position: 'absolute',
           right: spacing.screenHorizontal,
+          alignItems: 'flex-end',
         }}>
         <EditComicButton onPress={() => editComic()} />
       </View>
