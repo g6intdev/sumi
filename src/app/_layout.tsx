@@ -9,6 +9,7 @@ export default function RootLayout() {
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       <Stack.Screen name="cast-setup" options={{ title: 'Choose your characters' }} />
       <Stack.Screen name="comic-creator" options={{ title: 'Panel Editor' }} />
+      <Stack.Screen name="comic-preview" options={{ title: 'Preview' }} />
     </Stack>
     </GestureHandlerRootView>
   );

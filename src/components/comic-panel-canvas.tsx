@@ -6,6 +6,7 @@ import type { CanvasObject, Panel } from '@/types/editor';
 
 type ComicPanelCanvasProps = {
   height: number;
+  interactive?: boolean;
   onMoveObject: (id: string, x: number, y: number) => void;
   onSelectObject: (id?: string) => void;
   panel: Panel;
@@ -89,7 +90,7 @@ function CanvasItem({ object, selected }: { object: CanvasObject; selected: bool
   );
 }
 
-export function ComicPanelCanvas({ height, onMoveObject, onSelectObject, panel, selectedObjectId, width }: ComicPanelCanvasProps) {
+export function ComicPanelCanvas({ height, interactive = true, onMoveObject, onSelectObject, panel, selectedObjectId, width }: ComicPanelCanvasProps) {
   const { colors, sizes } = useTheme();
   const background = panel.backgroundId === 'sky' ? colors.canvasSky : panel.backgroundId === 'sunset' ? colors.canvasSunset : colors.canvasPaper;
   const contentWidth = Math.max(0, width - sizes.canvasBorder * 2);
@@ -97,6 +98,7 @@ export function ComicPanelCanvas({ height, onMoveObject, onSelectObject, panel, 
   return (
     <View
       accessibilityLabel="Comic panel canvas"
+      pointerEvents={interactive ? 'auto' : 'none'}
       onTouchEnd={(event) => {
         if (event.target === event.currentTarget) onSelectObject(undefined);
       }}
@@ -117,6 +119,22 @@ export function ComicPanelCanvas({ height, onMoveObject, onSelectObject, panel, 
           width: object.width * contentWidth,
           height: object.height * contentHeight,
         };
+
+        if (!interactive) {
+          return (
+            <View
+              key={object.id}
+              style={{
+                height: pixelObject.height,
+                left: pixelObject.x,
+                position: 'absolute',
+                top: pixelObject.y,
+                width: pixelObject.width,
+              }}>
+              <CanvasItem object={pixelObject} selected={false} />
+            </View>
+          );
+        }
 
         return (
           <DraggableCanvasObject

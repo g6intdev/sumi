@@ -1,7 +1,7 @@
 import { BottomSheet, Button, Column, Host, Row, Spacer, Text as NativeText, TextInput as NativeTextInput } from '@expo/ui';
-import { useLocalSearchParams } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { ScrollView, View, useWindowDimensions } from 'react-native';
+import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
+import { Button as HeaderButton, ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
 import { useTheme } from '@/theme/theme';
@@ -19,12 +19,26 @@ const choices = {
 const panelCount = 4;
 
 export function ComicCreatorScreen() {
-  const { characters: serializedCharacters } = useLocalSearchParams<{ characters?: string }>();
+  const {
+    activePanel: initialActivePanel,
+    characters: serializedCharacters,
+    panels: serializedPanels,
+  } = useLocalSearchParams<{ activePanel?: string; characters?: string; panels?: string }>();
   const { colors, radii, sizes, spacing, typography } = useTheme();
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const [editorHeight, setEditorHeight] = useState(windowHeight);
-  const [panels, setPanels] = useState<Panel[]>(() => Array.from({ length: panelCount }, () => ({ objects: [] })));
-  const [activePanelIndex, setActivePanelIndex] = useState(0);
+  const [panels, setPanels] = useState<Panel[]>(() => {
+    try {
+      const parsed = serializedPanels ? JSON.parse(serializedPanels) as Panel[] : [];
+      return Array.from({ length: panelCount }, (_, index) => parsed[index] ?? { objects: [] });
+    } catch {
+      return Array.from({ length: panelCount }, () => ({ objects: [] }));
+    }
+  });
+  const [activePanelIndex, setActivePanelIndex] = useState(() => {
+    const index = Number(initialActivePanel);
+    return Number.isInteger(index) && index >= 0 && index < panelCount ? index : 0;
+  });
   const [selectedObjectId, setSelectedObjectId] = useState<string>();
   const [picker, setPicker] = useState<PickerKind>();
   const [dialogueDraft, setDialogueDraft] = useState('');
@@ -37,6 +51,14 @@ export function ComicCreatorScreen() {
       return [];
     }
   }, [serializedCharacters]);
+
+  useEffect(() => {
+    const index = Number(initialActivePanel);
+    if (Number.isInteger(index) && index >= 0 && index < panelCount) {
+      goToPanel(index);
+    }
+  }, [initialActivePanel]);
+
   const panel = panels[activePanelIndex];
   const selectedObject = panel.objects.find((object) => object.id === selectedObjectId);
   const availableCanvasWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 2);
@@ -113,7 +135,8 @@ export function ComicCreatorScreen() {
   }
 
   return (
-    <ScrollView
+    <>
+      <ScrollView
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       onLayout={(event) => setEditorHeight(event.nativeEvent.layout.height)}
@@ -212,7 +235,20 @@ export function ComicCreatorScreen() {
           </Column>
         </BottomSheet>
       </Host>
-
-    </ScrollView>
+      </ScrollView>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <HeaderButton
+              onPress={() => router.push({
+                pathname: '/comic-preview',
+                params: { characters: serializedCharacters, panels: JSON.stringify(panels) },
+              })}
+              title="Next"
+            />
+          ),
+        }}
+      />
+    </>
   );
 }
