@@ -14,6 +14,19 @@ const sharedColors = {
   propCup: '#F4F4F5',
 } as const;
 
+export const comicBackgroundColors = [
+  '#F4D8CD',
+  '#D8E7F4',
+  '#DCEAD7',
+  '#E8DDF2',
+  '#F3E5C8',
+] as const;
+
+export function getComicBackgroundColor(id: string) {
+  const hash = Array.from(id).reduce((total, character) => total + character.charCodeAt(0), 0);
+  return comicBackgroundColors[hash % comicBackgroundColors.length];
+}
+
 const colorSchemes = {
   light: {
     ...sharedColors,
@@ -46,6 +59,8 @@ export const spacing = {
   screenHorizontal: 24,
   screenTop: 24,
   contentGap: 18,
+  comicExportPadding: 32,
+  comicExportPanelGap: 12,
   screenBottom: 32,
 } as const;
 
@@ -90,6 +105,9 @@ export const sizes = {
   floatingActionIcon: 28,
   panelAspectRatio: 1 / 0.72,
   panelEditorChromeHeight: 226,
+  libraryComicMinWidth: 150,
+  comicExportWidth: 1200,
+  contextMenuWidth: 144,
 } as const;
 
 export function useTheme() {

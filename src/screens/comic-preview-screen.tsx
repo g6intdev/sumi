@@ -11,7 +11,8 @@ import type { Panel } from '@/types/editor';
 const panelCount = 4;
 
 export function ComicPreviewScreen() {
-  const { characters: serializedCharacters, comicId, createdAt, panels: serializedPanels } = useLocalSearchParams<{
+  const { backgroundColor, characters: serializedCharacters, comicId, createdAt, panels: serializedPanels } = useLocalSearchParams<{
+    backgroundColor?: string;
     characters?: string;
     comicId?: string;
     createdAt?: string;
@@ -39,6 +40,7 @@ export function ComicPreviewScreen() {
       pathname: '/comic-creator',
       params: {
         activePanel: String(activePanel),
+        backgroundColor,
         characters: serializedCharacters,
         comicId,
         createdAt,
@@ -54,7 +56,7 @@ export function ComicPreviewScreen() {
       contentInsetAdjustmentBehavior="automatic"
       nestedScrollEnabled
       showsVerticalScrollIndicator
-      style={{ flex: 1, backgroundColor: colors.background }}
+      style={{ flex: 1, backgroundColor: backgroundColor ?? colors.background }}
       contentContainerStyle={{
         alignItems: 'center',
         gap: spacing.contentGap,

@@ -5,7 +5,7 @@ import { Button as HeaderButton, ScrollView, View, useWindowDimensions } from 'r
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
 import { getComic, saveComic } from '@/storage/comic-library';
-import { useTheme } from '@/theme/theme';
+import { getComicBackgroundColor, useTheme } from '@/theme/theme';
 import type { SelectedCharacter } from '@/types/character';
 import type { CanvasObject, Panel } from '@/types/editor';
 
@@ -51,6 +51,7 @@ export function ComicCreatorScreen() {
   const [nextObjectId, setNextObjectId] = useState(1);
   const [comicId] = useState(() => initialComicId ?? `${Date.now()}`);
   const [createdAt] = useState(() => initialCreatedAt ?? savedComic?.createdAt ?? new Date().toISOString());
+  const backgroundColor = savedComic?.backgroundColor ?? getComicBackgroundColor(comicId);
 
   const characters = useMemo(() => {
     try {
@@ -61,8 +62,14 @@ export function ComicCreatorScreen() {
   }, [serializedCharacters]);
 
   useEffect(() => {
-    saveComic({ characters, createdAt, id: comicId, panels });
-  }, [characters, comicId, createdAt, panels]);
+    saveComic({
+      backgroundColor,
+      characters,
+      createdAt,
+      id: comicId,
+      panels,
+    });
+  }, [backgroundColor, characters, comicId, createdAt, panels]);
 
   useEffect(() => {
     const index = Number(initialActivePanel);
@@ -255,6 +262,7 @@ export function ComicCreatorScreen() {
               onPress={() => router.push({
                 pathname: '/comic-preview',
                 params: {
+                  backgroundColor,
                   characters: serializedCharacters,
                   comicId,
                   createdAt,
