@@ -85,9 +85,7 @@ export function ComicCreatorScreen() {
   const selectedObject = panel.objects.find((object) => object.id === selectedObjectId);
   const availableCanvasWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 2);
   const availableCanvasHeight = Math.max(0, editorHeight - sizes.panelEditorChromeHeight);
-  const canvasWidth = process.env.EXPO_OS === 'web'
-    ? Math.min(availableCanvasWidth, availableCanvasHeight * sizes.panelAspectRatio)
-    : availableCanvasWidth;
+  const canvasWidth = Math.min(availableCanvasWidth, availableCanvasHeight * sizes.panelAspectRatio);
   const canvasHeight = canvasWidth / sizes.panelAspectRatio;
   const bottomSheetButtonWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 4);
 
