@@ -8,7 +8,7 @@ import { captureRef } from 'react-native-view-shot';
 
 import { ComicExportCanvas } from '@/components/comic-export-canvas';
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
-import { deleteComic, saveComic, useComicLibrary } from '@/storage/comic-library';
+import { deleteComic, duplicateComic, saveComic, useComicLibrary } from '@/storage/comic-library';
 import { useTheme } from '@/theme/theme';
 import type { SavedComic } from '@/types/comic';
 
@@ -62,6 +62,11 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
     if (!name) return;
     saveComic({ ...comic, name });
     setRenameOpen(false);
+  };
+
+  const duplicate = () => {
+    setWebMenuOpen(false);
+    duplicateComic(comic);
   };
 
   const exportComic = async () => {
@@ -133,6 +138,7 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
               padding: spacing.tiny, position: 'absolute', right: spacing.compact,
               top: sizes.contextMenuButton + spacing.control, zIndex: 1 }}>
               <Pressable onPress={editName} style={{ padding: spacing.control }}><Text style={{ color: colors.textPrimary, ...typography.label }}>Edit name</Text></Pressable>
+              <Pressable onPress={duplicate} style={{ padding: spacing.control }}><Text style={{ color: colors.textPrimary, ...typography.label }}>Duplicate</Text></Pressable>
               <Pressable onPress={exportComic} style={{ padding: spacing.control }}><Text style={{ color: colors.textPrimary, ...typography.label }}>Export</Text></Pressable>
               <Pressable onPress={() => { setWebMenuOpen(false); confirmDelete(); }} style={{ padding: spacing.control }}><Text style={{ color: colors.danger, ...typography.label }}>Delete</Text></Pressable>
             </View>
@@ -141,10 +147,12 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
       ) : (
         <MenuView shouldOpenOnLongPress actions={[
           { id: 'edit-name', title: 'Edit name', image: 'pencil' },
+          { id: 'duplicate', title: 'Duplicate', image: 'plus.square.on.square' },
           { id: 'export', title: 'Export', image: 'square.and.arrow.up' },
           { id: 'delete', title: 'Delete', image: 'trash', attributes: { destructive: true } },
         ]} onPressAction={({ nativeEvent }) => {
           if (nativeEvent.event === 'edit-name') editName();
+          else if (nativeEvent.event === 'duplicate') duplicate();
           else if (nativeEvent.event === 'export') exportComic();
           else confirmDelete();
         }}>
@@ -154,13 +162,7 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
       <Host matchContents seedColor={colors.accent}>
         <BottomSheet isPresented={renameOpen} onDismiss={() => setRenameOpen(false)} showDragIndicator>
           <Column alignment="start" spacing={spacing.section} style={{ padding: spacing.screenHorizontal }}>
-            <Row spacing={spacing.control}>
-              <Button label="×" onPress={() => setRenameOpen(false)} variant="outlined" />
-              <Spacer />
-              <NativeText textStyle={{ color: colors.textPrimary, ...typography.label }}>Edit name</NativeText>
-              <Spacer />
-              <Button label="Save" onPress={commitName} variant="filled" />
-            </Row>
+            <NativeText textStyle={{ color: colors.textPrimary, ...typography.label }}>Edit name</NativeText>
             <NativeTextInput
               autoCapitalize="words"
               autoFocus
@@ -176,6 +178,11 @@ function ComicCard({ comic, comicWidth, panelHeight, panelWidth, previewWidth }:
                 borderWidth: sizes.border, padding: spacing.control, width: renameFieldWidth }}
               textStyle={{ color: colors.textPrimary, ...typography.body }}
             />
+            <Row spacing={spacing.control} style={{ width: renameFieldWidth }}>
+              <Spacer />
+              <Button label="Cancel" onPress={() => setRenameOpen(false)} variant="outlined" />
+              <Button label="Save" onPress={commitName} variant="filled" />
+            </Row>
           </Column>
         </BottomSheet>
       </Host>

@@ -42,6 +42,17 @@ export function saveComic(comic: SavedComic) {
   listeners.forEach((listener) => listener());
 }
 
+export function duplicateComic(comic: SavedComic) {
+  const duplicate: SavedComic = {
+    ...JSON.parse(JSON.stringify(comic)) as SavedComic,
+    createdAt: new Date().toISOString(),
+    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    name: `Copy of ${comic.name}`,
+  };
+  saveComic(duplicate);
+  return duplicate;
+}
+
 export function deleteComic(id: string) {
   comics = comics.filter((comic) => comic.id !== id);
   try {
