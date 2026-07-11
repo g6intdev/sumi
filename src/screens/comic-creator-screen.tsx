@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Button as HeaderButton, ScrollView, View, useWindowDimensions } from 'react-native';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
-import { saveComic } from '@/storage/comic-library';
+import { getComic, saveComic } from '@/storage/comic-library';
 import { useTheme } from '@/theme/theme';
 import type { SelectedCharacter } from '@/types/character';
 import type { CanvasObject, Panel } from '@/types/editor';
@@ -29,10 +29,13 @@ export function ComicCreatorScreen() {
   } = useLocalSearchParams<{ activePanel?: string; characters?: string; comicId?: string; createdAt?: string; panels?: string }>();
   const { colors, radii, sizes, spacing, typography } = useTheme();
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
+  const savedComic = initialComicId ? getComic(initialComicId) : undefined;
   const [editorHeight, setEditorHeight] = useState(windowHeight);
   const [panels, setPanels] = useState<Panel[]>(() => {
     try {
-      const parsed = serializedPanels ? JSON.parse(serializedPanels) as Panel[] : [];
+      const parsed = serializedPanels
+        ? JSON.parse(serializedPanels) as Panel[]
+        : savedComic?.panels ?? [];
       return Array.from({ length: panelCount }, (_, index) => parsed[index] ?? { objects: [] });
     } catch {
       return Array.from({ length: panelCount }, () => ({ objects: [] }));
@@ -47,7 +50,7 @@ export function ComicCreatorScreen() {
   const [dialogueDraft, setDialogueDraft] = useState('');
   const [nextObjectId, setNextObjectId] = useState(1);
   const [comicId] = useState(() => initialComicId ?? `${Date.now()}`);
-  const [createdAt] = useState(() => initialCreatedAt ?? new Date().toISOString());
+  const [createdAt] = useState(() => initialCreatedAt ?? savedComic?.createdAt ?? new Date().toISOString());
 
   const characters = useMemo(() => {
     try {

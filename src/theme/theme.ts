@@ -86,6 +86,8 @@ export const sizes = {
   border: 1,
   selectedBorder: 2,
   buttonHeight: 50,
+  floatingActionButton: 64,
+  floatingActionIcon: 28,
   panelAspectRatio: 1 / 0.72,
   panelEditorChromeHeight: 226,
 } as const;

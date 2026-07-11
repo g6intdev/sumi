@@ -16,6 +16,10 @@ export function CastSetupScreen() {
   useColorScheme();
   const { colors, radii, sizes, spacing, typography } = useTheme();
   const [selected, setSelected] = useState<SelectedCharacter[]>([]);
+  const [draftComic] = useState(() => ({
+    createdAt: new Date().toISOString(),
+    id: `${Date.now()}`,
+  }));
 
   const selectedIds = useMemo(() => new Set(selected.map((character) => character.id)), [selected]);
 
@@ -29,7 +33,14 @@ export function CastSetupScreen() {
   }
 
   function continueToCreator() {
-    router.push({ pathname: '/comic-creator', params: { characters: JSON.stringify(selected) } });
+    router.push({
+      pathname: '/comic-creator',
+      params: {
+        characters: JSON.stringify(selected),
+        comicId: draftComic.id,
+        createdAt: draftComic.createdAt,
+      },
+    });
   }
 
   return (

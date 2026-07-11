@@ -15,6 +15,10 @@ function readComics(): SavedComic[] {
 
 let comics = readComics();
 
+export function getComic(id: string) {
+  return comics.find((comic) => comic.id === id);
+}
+
 export function saveComic(comic: SavedComic) {
   const existingIndex = comics.findIndex((item) => item.id === comic.id);
   comics = existingIndex === -1

@@ -1,8 +1,10 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useMemo } from 'react';
-import { Button as HeaderButton, Pressable, ScrollView, useWindowDimensions } from 'react-native';
+import { Button as HeaderButton, Pressable, ScrollView, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ComicPanelCanvas } from '@/components/comic-panel-canvas';
+import { EditComicButton } from '@/components/edit-comic-button';
 import { useTheme } from '@/theme/theme';
 import type { Panel } from '@/types/editor';
 
@@ -16,6 +18,7 @@ export function ComicPreviewScreen() {
     panels?: string;
   }>();
   const { colors, sizes, spacing } = useTheme();
+  const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
   const panels = useMemo<Panel[]>(() => {
     try {
@@ -25,8 +28,24 @@ export function ComicPreviewScreen() {
       return Array.from({ length: panelCount }, () => ({ objects: [] }));
     }
   }, [serializedPanels]);
-  const panelWidth = Math.max(0, windowWidth - spacing.screenHorizontal * 2);
+  const panelWidth = Math.max(
+    0,
+    Math.min(windowWidth - spacing.screenHorizontal * 2, sizes.modalMaxWidth),
+  );
   const panelHeight = panelWidth / sizes.panelAspectRatio;
+
+  function editComic(activePanel = 0) {
+    router.dismissTo({
+      pathname: '/comic-creator',
+      params: {
+        activePanel: String(activePanel),
+        characters: serializedCharacters,
+        comicId,
+        createdAt,
+        panels: serializedPanels,
+      },
+    });
+  }
 
   return (
     <>
@@ -48,16 +67,7 @@ export function ComicPreviewScreen() {
           accessibilityLabel={`Edit panel ${index + 1}`}
           accessibilityRole="button"
           key={index}
-          onPress={() => router.dismissTo({
-            pathname: '/comic-creator',
-            params: {
-              activePanel: String(index),
-              characters: serializedCharacters,
-              comicId,
-              createdAt,
-              panels: serializedPanels,
-            },
-          })}
+          onPress={() => editComic(index)}
           style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}>
           <ComicPanelCanvas
             height={panelHeight}
@@ -70,6 +80,14 @@ export function ComicPreviewScreen() {
         </Pressable>
       ))}
       </ScrollView>
+      <View
+        style={{
+          bottom: insets.bottom + spacing.screenBottom,
+          position: 'absolute',
+          right: spacing.screenHorizontal,
+        }}>
+        <EditComicButton onPress={() => editComic()} />
+      </View>
       <Stack.Screen
         options={{
           headerRight: () => <HeaderButton onPress={() => router.replace('/(tabs)/library')} title="Done" />,
