@@ -3,6 +3,15 @@ import { useColorScheme } from 'react-native';
 const sharedColors = {
   accent: '#5B5BD6',
   danger: '#DC2626',
+  canvasInk: '#24212B',
+  canvasPaper: '#FFF9ED',
+  canvasSky: '#BFE3FF',
+  canvasSunset: '#FFD1BA',
+  dialogue: '#FFFFFF',
+  dialogueText: '#18181B',
+  propPhone: '#3F3F46',
+  propTable: '#A16207',
+  propCup: '#F4F4F5',
 } as const;
 
 const colorSchemes = {
@@ -29,15 +38,19 @@ const colorSchemes = {
 } as const;
 
 export const spacing = {
+  hairline: 2,
+  tiny: 4,
   compact: 8,
   control: 12,
   section: 16,
   screenHorizontal: 24,
+  screenTop: 24,
   contentGap: 18,
   screenBottom: 32,
 } as const;
 
 export const radii = {
+  small: 6,
   avatar: 28,
   control: 12,
   surface: 16,
@@ -63,6 +76,12 @@ export const typography = {
 } as const;
 
 export const sizes = {
+  canvasObject: 72,
+  assetObject: 54,
+  canvasBorder: 3,
+  selectionBorder: 3,
+  actionMinWidth: 92,
+  modalMaxWidth: 420,
   avatar: 56,
   border: 1,
   selectedBorder: 2,

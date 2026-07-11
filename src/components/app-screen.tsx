@@ -1,4 +1,4 @@
-import { Host, Text } from '@expo/ui';
+import { Column, Host, Text } from '@expo/ui';
 import type { PropsWithChildren } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -20,33 +20,36 @@ export function AppScreen({ children, subtitle, title }: AppScreenProps) {
       <View
         style={{
           flex: 1,
-          justifyContent: 'center',
-          alignItems: 'center',
+          justifyContent: 'flex-start',
+          alignItems: 'stretch',
           gap: spacing.contentGap,
+          paddingTop: spacing.screenTop,
           paddingHorizontal: spacing.screenHorizontal,
         }}>
         <Host matchContents seedColor={colors.accent}>
-          <Text
-            textStyle={{
-              color: colors.textPrimary,
-              ...typography.title,
-              textAlign: 'center',
-            }}>
-            {title}
-          </Text>
-
-          {subtitle ? (
+          <Column alignment="start" spacing={spacing.contentGap}>
             <Text
               textStyle={{
-                color: colors.textSecondary,
-                ...typography.body,
-                textAlign: 'center',
+                color: colors.textPrimary,
+                ...typography.title,
+                textAlign: 'left',
               }}>
-              {subtitle}
+              {title}
             </Text>
-          ) : null}
 
-          {children}
+            {subtitle ? (
+              <Text
+                textStyle={{
+                  color: colors.textSecondary,
+                  ...typography.body,
+                  textAlign: 'left',
+                }}>
+                {subtitle}
+              </Text>
+            ) : null}
+
+            {children}
+          </Column>
         </Host>
       </View>
     </SafeAreaView>
